@@ -72,12 +72,23 @@ describe "NestedFile" do
     end
   end
 
+  describe "nested body not saved to parent" do
+    before do
+      create_child_file "d.txt","<file e.txt>data</file>"
+    end
+    it 'e is data' do
+      File.read("/tmp/test_parent/e.txt").should == "data"
+    end
+    it "d.txt doesn't have body" do
+      File.read("/tmp/test_parent/d.txt").should == "<file e.txt>\n</file>"
+    end
+  end
+
+  if false
   describe 'saving file with sections writes to other files' do
     before(:each) do
       body = "<file /tmp/test_parent/c.txt>\nI was here\n</file>"
-      try_for_period(2) do
-        File.create "/tmp/test/b.txt",body
-      end
+      create_child_file "b.txt",body
     end
 
     it 'exists' do
@@ -96,9 +107,7 @@ describe "NestedFile" do
   describe 'saving file with sections writes to other files - relative path' do
     before(:each) do
       body = "<file c.txt>\nI was here\n</file>"
-      try_for_period(2) do
-        File.create "/tmp/test/b.txt",body
-      end
+      create_child_file "b.txt", body
     end
 
     it 'exists' do
@@ -117,9 +126,7 @@ describe "NestedFile" do
   describe 'saving file with sections writes to other files - save to sub' do
     before(:each) do
       body = "<file sub/z.txt>\nI was here\n</file>"
-      try_for_period(2) do
-        File.create "/tmp/test/b.txt",body
-      end
+      create_child_file "b.txt", body
     end
 
     it 'z.txt has written text' do
@@ -130,9 +137,7 @@ describe "NestedFile" do
   describe 'saving file with sections writes to other files - save to parent' do
     before(:each) do
       body = "<file ../p.txt>\nI was here\n</file>"
-      try_for_period(2) do
-        File.create "/tmp/test/sub/b.txt",body
-      end
+      create_child_file "sub/b.txt", body
     end
 
     it 'z.txt has written text' do
@@ -152,6 +157,6 @@ describe "NestedFile" do
       File.read("/tmp/test_parent/exist.txt").should == 'Hello'
     end
   end
-
+  end
 
 end

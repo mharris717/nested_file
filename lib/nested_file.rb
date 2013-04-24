@@ -52,8 +52,11 @@ module NestedFile
     attr_accessor :raw_body, :filename
 
     fattr(:parsed_body) do
-      raw_body.gsub(/<file (.+?)>(.*?)<\/file>/m) do 
+      res = raw_body.gsub(/<file (.+?)>(.*?)<\/file>/m) do 
         FileSection.new(:parent_file => self, :file_to_insert => $1).to_s
+      end
+      res.gsub(/<files (.+?)>(.*?)<\/files>/m) do 
+        FileGroup.new(:parent_file => self, :file_glob => $1).to_s
       end
     end
 
@@ -100,6 +103,26 @@ module NestedFile
     end
   end
 
+  class FileGroup
+    include FromHash
+    attr_accessor :parent_file, :file_glob
+    fattr(:full_glob) do
+      File.expand_path(file_glob,File.dirname(parent_file.filename))
+    end
+    fattr(:files_to_insert) do
+      Dir[full_glob].sort
+    end
+    fattr(:sections) do
+      files_to_insert.map do |f|
+        FileSection.new(:parent_file => parent_file, :file_to_insert => parent_file.put_dir.parent_to_mount(f))
+      end
+    end
+    def to_s
+      res = sections.join("\n")
+      "<files #{file_glob}>\n#{res}\n</files>"
+    end
+  end
+
   class PutDir
     include FromHash
     attr_accessor :parent_dir, :mount_dir
@@ -136,7 +159,7 @@ module NestedFile
     def read_file(path)
       log "read file #{path}" do
         body = File.read(mount_to_parent(path))
-        PutFile.new(:raw_body => body, :filename => mount_to_parent(path)).parsed_body
+        PutFile.new(:raw_body => body, :filename => mount_to_parent(path), :put_dir => self).parsed_body
       end
     end
     def size(path)
