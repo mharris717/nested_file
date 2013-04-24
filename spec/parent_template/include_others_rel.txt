@@ -1,0 +1,2 @@
+<file a.txt>
+</file>

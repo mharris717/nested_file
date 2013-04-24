@@ -1,0 +1,2 @@
+<file /tmp/test_parent/a.txt>
+</file>
