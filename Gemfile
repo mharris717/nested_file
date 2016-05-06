@@ -1,3 +1,5 @@
+ruby '2.3.1'
+
 source "http://rubygems.org"
 # Add dependencies required to use your gem here.
 # Example:
@@ -25,4 +27,5 @@ end
 
 gem 'mharris_ext'
 gem 'rfusefs'
+gem 'rfuse', github: "winebarrel/rfuse", branch: 'fix_for_osx'
 
