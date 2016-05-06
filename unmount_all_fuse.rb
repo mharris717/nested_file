@@ -17,6 +17,8 @@ require 'mharris_ext'
 
 mounts = ec("mount").split("\n").map { |x| x.split(" ").first }.select { |x| x =~ /osxfuse/ }
 puts mounts.inspect
+puts "Continue?"
+STDIN.gets
 mounts.each do |name|
   ec "umount #{name}"
 end

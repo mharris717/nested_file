@@ -1,2 +1,2 @@
-<file {{NF_ROOT}}/tmp/test_parent/a.txt>
+<file {{NF_PARENT_DIR}}/a.txt>
 </file>

@@ -30,25 +30,31 @@ def print_child_file_changes
   end
 end
 
-
-
 describe "NestedFile" do
-  let(:parent_dir) { "#{NestedFile.tmp_dir}/test_parent" }
-  let(:child_dir) { "#{NestedFile.tmp_dir}/test#{@fork_data[:num]}" }
+  let(:dir_num) do
+    @dir_num ||= rand(100000000000)
+  end
+  let(:parent_dir) { "#{NestedFile.tmp_dir}/test_parent#{dir_num}" }
+  let(:child_dir) { "#{NestedFile.tmp_dir}/test#{dir_num}" }
 
   def fork_mount
-    num = rand(10000000000)
+    ec "mkdir #{parent_dir}", silent: true
+    ec "mkdir #{child_dir}", silent: true
+    File.create "#{parent_dir}/zzz.txt","hello"
+
     pid = fork do
-      ec "mkdir tmp/test#{num}"
-      cmd = "bundle exec ruby ./bin/nested_file #{parent_dir} /code/orig/nested_file/tmp/test#{num}"
-      puts cmd
+      cmd = "bundle exec ruby ./bin/nested_file #{parent_dir} #{child_dir}"
       exec cmd
     end
 
-    sleep 1
+    sleep 0.05
+    try_for_period(2) do
+      File.read("#{child_dir}/zzz.txt")
+    end
 
-    mount_name = ec("mount").split("\n").select { |x| x =~ /test#{num}/ }.first.split(" ").first
-    {num: num, pid: pid, mount_name: mount_name}
+    d = File.basename(child_dir)
+    mount_name = ec("mount", silent: true).split("\n").select { |x| x =~ /#{d}/ }.first.split(" ").first
+    {pid: pid, mount_name: mount_name}
   end
 
   def create_parent_file(path,str)
@@ -64,27 +70,28 @@ describe "NestedFile" do
   end
 
   before(:all) do
-    FileUtils.mkdir(parent_dir) unless FileTest.exist?(parent_dir)
     @fork_data = fork_mount
   end
   after(:all) do
     if @fork_data
       Process.kill "KILL",@fork_data[:pid] 
-      ec "umount #{@fork_data[:mount_name]}"
+      ec "umount #{@fork_data[:mount_name]}", silent: true
     end
   end
 
   before(:each) do
-    FileUtils.mkdir(parent_dir) unless FileTest.exist?(parent_dir)
+    # FileUtils.mkdir(parent_dir) unless FileTest.exist?(parent_dir)
     `rm -rf #{parent_dir}/*`
     Dir["spec/parent_template/*"].each do |f|
       `cp -r #{f} #{parent_dir}`
     end
 
     Dir["#{parent_dir}/**/*.txt"].each do |file|
-      body = File.read(file).gsub("{{NF_ROOT}}",NestedFile.root)
+      body = File.read(file).gsub("{{NF_ROOT}}",NestedFile.root).gsub("{{NF_PARENT_DIR}}",parent_dir)
       File.create file, body
     end
+
+    # sleep 1
   end
 
   describe "basic reads" do
@@ -154,9 +161,9 @@ describe "NestedFile" do
       FileTest.should be_exist("#{child_dir}/c.txt")
     end
 
-    # it 'c.txt has written text' do
-    #   File.read("#{parent_dir}/c.txt").should == "I was here"
-    # end
+    it 'c.txt has written text' do
+      File.read("#{parent_dir}/c.txt").should == "I was here"
+    end
 
   end
 
@@ -200,6 +207,48 @@ describe "NestedFile" do
 
     it 'z.txt has written text' do
       File.read("#{parent_dir}/p.txt").should == "I was here"
+    end
+  end
+
+  describe 'modifying file referenced elsewhere updates other file' do
+    it 'writing to parent - longer string - include_others.txt has written text' do
+      create_parent_file "a.txt", "Hello There"
+      sleep 1
+
+      body = "<file #{parent_dir}/a.txt>\nHello There\n</file>"
+      File.read("#{parent_dir}/include_others.txt").should == "<file #{parent_dir}/a.txt>\n</file>"
+      File.read("#{child_dir}/include_others.txt").should == body
+    end
+
+    it 'writing to child - longer string - include_others.txt has written text' do
+      create_child_file "a.txt", "Hello There"
+      sleep 0.3
+
+      body = "<file #{parent_dir}/a.txt>\nHello There\n</file>"
+      File.read("#{parent_dir}/include_others.txt").should == "<file #{parent_dir}/a.txt>\n</file>"
+      File.read("#{child_dir}/include_others.txt").should == body
+    end
+
+    it 'writing to parent - shorter string - include_others.txt has written text' do
+      create_parent_file "a.txt", "bb"
+      sleep 0.3
+
+      body = "<file #{parent_dir}/a.txt>\nbb\n</file>"
+      File.read("#{parent_dir}/include_others.txt").should == "<file #{parent_dir}/a.txt>\n</file>"
+      File.read("#{child_dir}/include_others.txt").should == body
+    end
+
+    it 'writing to child - shorter string - include_others.txt has written text' do
+      puts "\n\nSPEC START\n\n"
+      #sleep 1
+      create_child_file "a.txt", "bb"
+      # ec "echo '' > #{child_dir}/a.txt"
+      puts "CREATED"
+      sleep 0.3
+
+      body = "<file #{parent_dir}/a.txt>\nbb\n</file>"
+      File.read("#{parent_dir}/include_others.txt").should == "<file #{parent_dir}/a.txt>\n</file>"
+      File.read("#{child_dir}/include_others.txt").should == body
     end
   end
 

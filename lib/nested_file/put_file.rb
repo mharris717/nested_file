@@ -18,15 +18,22 @@ module NestedFile
         FileSection.new(parent_file: self, file_to_insert: m[0], parent_body: m[1]).write!
       end
     end
-    def write_self!
+    def write_self!(file=nil)
       res = raw_body.gsub(/<file (.+?)>(.*?)<\/file>/m) do
         "<file #{$1}>\n</file>"
       end
-      File.create filename, res
+      puts "write_self! #{filename} #{res}"
+
+      if file
+        puts "IN WRITE PART"
+        file.write res
+      else
+        File.create filename, res
+      end
     end
-    def write_all!
+    def write_all!(file=nil)
       write_subs!
-      write_self!
+      write_self!(file)
     end
   end
 end

@@ -26,9 +26,15 @@ module NestedFile
       trimmed_parent_body.present?
     end
     def write!
+      puts "FileSection write!"
       return unless should_write?
       log "writing to #{full_file_to_insert} from #{parent_file.filename}"
-      File.create full_file_to_insert, trimmed_parent_body
+      # File.create full_file_to_insert, trimmed_parent_body
+
+      File.open(full_file_to_insert,"w") do |f|
+        f << trimmed_parent_body
+        f.flush
+      end
     end
   end
 end
