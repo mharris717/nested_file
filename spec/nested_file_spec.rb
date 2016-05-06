@@ -84,7 +84,7 @@ describe "NestedFile" do
     end
   end
 
-  if false
+  if true
   describe 'saving file with sections writes to other files' do
     before(:each) do
       body = "<file /tmp/test_parent/c.txt>\nI was here\n</file>"

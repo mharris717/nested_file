@@ -32,6 +32,8 @@ class File
 end
 
 def log(str)
+  #return yield if block_given?
+  #return nil
   res = nil
   if block_given?
     res = yield
@@ -67,6 +69,16 @@ module NestedFile
 
         FileSection.new(:parent_file => self, :file_to_insert => m[0], :parent_body => m[1]).write!
       end
+    end
+    def write_self!
+      res = raw_body.gsub(/<file (.+?)>(.*?)<\/file>/m) do
+        "<file #{$1}>\n</file>"
+      end
+      File.create filename, res
+    end
+    def write_all!
+      write_subs!
+      write_self!
     end
   end
 
@@ -110,7 +122,9 @@ module NestedFile
       File.expand_path(file_glob,File.dirname(parent_file.filename))
     end
     fattr(:files_to_insert) do
-      Dir[full_glob].sort
+      log "expanded #{file_glob} -> #{full_glob} ->" do
+        Dir[full_glob].sort
+      end
     end
     fattr(:sections) do
       files_to_insert.map do |f|
@@ -174,10 +188,11 @@ module NestedFile
     end
 
     def write_to(path,contents)
-      PutFile.new(:raw_body => contents, :filename => mount_to_parent(path)).write_subs!
-      f = mount_to_parent(path)
-      log "writing to #{f}"
-      File.create f, contents
+      file = PutFile.new(:raw_body => contents, :filename => mount_to_parent(path))
+      file.write_all!
+      #f = mount_to_parent(path)
+      #log "writing to #{f}"
+      #File.create f, contents
     end
   end
 end
