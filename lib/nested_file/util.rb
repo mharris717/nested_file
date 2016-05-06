@@ -37,7 +37,7 @@ def log(str)
     res = yield
     str = "#{str} res: #{res}"
   end
-  puts str
+  # puts str
   File.append "/code/orig/nested_file/debug.log","#{str}\n"
   res
 end

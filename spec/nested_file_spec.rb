@@ -14,13 +14,42 @@ def try_for_period(sec)
   yield
 end
 
-describe "NestedFile" do
-  it 'smoke' do
-    2.should == 2
-  end
+def print_child_file_changes
+  puts "print_child_file_changes"
+  STDIN.gets
+  before_files = Dir["#{child_dir}/**/*.txt"]
+  yield
+  after_files = Dir["#{child_dir}/**/*.txt"]
+  both_files = (before_files+after_files).uniq
 
+  puts "#{both_files} total files"
+  both_files.each do |file|
+    if [before_files,after_files].any? { |fs| !fs.include?(file) }
+      puts "#{file} #{before_files.include?(file)}/#{after_files.include?(file)}"
+    end
+  end
+end
+
+
+
+describe "NestedFile" do
   let(:parent_dir) { "#{NestedFile.tmp_dir}/test_parent" }
-  let(:child_dir) { "#{NestedFile.tmp_dir}/test" }
+  let(:child_dir) { "#{NestedFile.tmp_dir}/test#{@fork_data[:num]}" }
+
+  def fork_mount
+    num = rand(10000000000)
+    pid = fork do
+      ec "mkdir tmp/test#{num}"
+      cmd = "bundle exec ruby ./bin/nested_file #{parent_dir} /code/orig/nested_file/tmp/test#{num}"
+      puts cmd
+      exec cmd
+    end
+
+    sleep 1
+
+    mount_name = ec("mount").split("\n").select { |x| x =~ /test#{num}/ }.first.split(" ").first
+    {num: num, pid: pid, mount_name: mount_name}
+  end
 
   def create_parent_file(path,str)
     try_for_period(2) do
@@ -31,6 +60,17 @@ describe "NestedFile" do
   def create_child_file(path,str)
     try_for_period(2) do
       File.create "#{child_dir}/#{path}",str
+    end
+  end
+
+  before(:all) do
+    FileUtils.mkdir(parent_dir) unless FileTest.exist?(parent_dir)
+    @fork_data = fork_mount
+  end
+  after(:all) do
+    if @fork_data
+      Process.kill "KILL",@fork_data[:pid] 
+      ec "umount #{@fork_data[:mount_name]}"
     end
   end
 
@@ -47,19 +87,21 @@ describe "NestedFile" do
     end
   end
 
-  it 'read from mounted fs' do
-    str = File.read "#{child_dir}/a.txt"
-    str.should == "hello"
-  end
+  describe "basic reads" do
+    it 'read from mounted fs' do
+      str = File.read "#{child_dir}/a.txt"
+      str.should == "hello"
+    end
 
-  it 'read subs in file contents - full path' do
-    str = File.read "#{child_dir}/include_others.txt"
-    str.should == "<file #{parent_dir}/a.txt>\nhello\n</file>"
-  end
+    it 'read subs in file contents - full path' do
+      str = File.read "#{child_dir}/include_others.txt"
+      str.should == "<file #{parent_dir}/a.txt>\nhello\n</file>"
+    end
 
-  it 'read subs in file contents - relative_path' do
-    str = File.read "#{child_dir}/include_others_rel.txt"
-    str.should == "<file a.txt>\nhello\n</file>"
+    it 'read subs in file contents - relative_path' do
+      str = File.read "#{child_dir}/include_others_rel.txt"
+      str.should == "<file a.txt>\nhello\n</file>"
+    end
   end
 
   describe "can use glob in file desc" do
@@ -90,26 +132,36 @@ describe "NestedFile" do
     end
   end
 
-  if false
+  
   describe 'saving file with sections writes to other files' do
     before(:each) do
-      body = "<file #{parent_dir}/c.txt>\nI was here\n</file>"
+      #puts "Before:\n" + Dir["#{child_dir}/*.txt"].join("\n")
+      body = "<file c.txt>\nI was here\n</file>"
       create_child_file "b.txt",body
+      #puts "After:\n" + Dir["#{child_dir}/*.txt"].join("\n")
+
+      # Dir["#{child_dir}/*.txt"].each do |f|
+      #   c = File.read(f).length
+      #   puts "#{f}: #{c} #{FileTest.exist?(f)}"
+      # end
+
     end
 
     it 'exists' do
       FileTest.should be_exist("#{parent_dir}/b.txt")
-      FileTest.should be_exist("#(child_dir}/b.txt")
+      FileTest.should be_exist("#{child_dir}/b.txt")
       FileTest.should be_exist("#{parent_dir}/c.txt")
-      FileTest.should be_exist("#(child_dir}/c.txt")
+      FileTest.should be_exist("#{child_dir}/c.txt")
     end
 
-    it 'c.txt has written text' do
-      File.read("#(parent_dir}/c.txt").should == "I was here"
-    end
+    # it 'c.txt has written text' do
+    #   File.read("#{parent_dir}/c.txt").should == "I was here"
+    # end
 
   end
 
+  if true
+  
   describe 'saving file with sections writes to other files - relative path' do
     before(:each) do
       body = "<file c.txt>\nI was here\n</file>"
@@ -118,9 +170,9 @@ describe "NestedFile" do
 
     it 'exists' do
       FileTest.should be_exist("#{parent_dir}/b.txt")
-      FileTest.should be_exist("#(child_dir}/b.txt")
+      FileTest.should be_exist("#{child_dir}/b.txt")
       FileTest.should be_exist("#{parent_dir}/c.txt")
-      FileTest.should be_exist("#(child_dir}/c.txt")
+      FileTest.should be_exist("#{child_dir}/c.txt")
     end
 
     it 'c.txt has written text' do
@@ -150,8 +202,6 @@ describe "NestedFile" do
       File.read("#{parent_dir}/p.txt").should == "I was here"
     end
   end
-
-
 
   describe "don't overwrite existing" do
     before do
