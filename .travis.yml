@@ -5,6 +5,7 @@ before_install:
   - sudo modprobe fuse
   - sudo chmod 666 /dev/fuse
   - sudo chown root:$USER /etc/fuse.conf
+install: bundle install
 language: ruby
 rvm:
   - 2.3.1
