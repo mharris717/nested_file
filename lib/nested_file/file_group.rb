@@ -1,10 +1,7 @@
 module NestedFile
   class FileGroup
     include FromHash
-    attr_accessor :parent_file, :file_glob
-    fattr(:full_glob) do
-      File.expand_path(file_glob,File.dirname(parent_file.filename))
-    end
+    attr_accessor :parent_file, :file_glob, :convert_path, :full_glob
     fattr(:files_to_insert) do
       log "expanded #{file_glob} -> #{full_glob} ->" do
         Dir[full_glob].sort
@@ -12,7 +9,9 @@ module NestedFile
     end
     fattr(:sections) do
       files_to_insert.map do |f|
-        FileSection.new(:parent_file => parent_file, :file_to_insert => parent_file.put_dir.parent_to_mount(f))
+        fp = convert_path.parent_to_mount(f)
+        full = File.join File.dirname(parent_file.filename),fp
+        FileSection.new(file_to_insert: fp, full_file_to_insert: full)
       end
     end
     def to_s

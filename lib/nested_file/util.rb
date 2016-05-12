@@ -46,3 +46,12 @@ def log(str)
 end
 
 File.create "/code/orig/nested_file/debug.log","Starting at #{Time.now}\n"
+
+class String
+  def gsub_safe(reg,str,&b)
+    res = gsub(reg,str,&b)
+    c = caller.join("\n")
+    raise "didn't change, gsub #{self} with #{reg}, replace with #{str}\n#{c}" if res == self
+    res
+  end
+end

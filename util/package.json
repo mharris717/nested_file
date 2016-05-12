@@ -1,0 +1,14 @@
+{
+  "name": "Attendance",
+  "version": "0.0.1",
+  "description": "Attendance App",
+  "main": "index.js",
+  "author": "mharris717",
+  "license": "ISC",
+  "devDependencies": {
+
+  },
+  "dependencies": {
+    "node-notifier": "^4.5.0"
+  }
+}
