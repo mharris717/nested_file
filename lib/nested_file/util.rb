@@ -11,7 +11,7 @@ end
 class File
   class << self
     def create(filename,str)
-      puts "File.create #{filename}"
+      # puts "File.create #{filename}"
       open(filename,"w") do |f|
         f << str
         # f.flush
@@ -40,7 +40,7 @@ def log(str)
     res = yield
     str = "#{str} res: #{res}"
   end
-  puts str
+  # puts str
   File.append "/code/orig/nested_file/debug.log","#{str}\n"
   res
 end

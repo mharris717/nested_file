@@ -34,8 +34,11 @@ describe "NestedFile" do
   let(:dir_num) do
     @dir_num ||= rand(100000000000)
   end
-  let(:parent_dir) { "#{NestedFile.tmp_dir}/test_parent#{dir_num}" }
-  let(:child_dir) { "#{NestedFile.tmp_dir}/test#{dir_num}" }
+  let(:tmp_dir) do
+    "/Users/mharris717/tmp2/nested"
+  end
+  let(:parent_dir) { "#{tmp_dir}/test_parent#{dir_num}" }
+  let(:child_dir) { "#{tmp_dir}/test#{dir_num}" }
 
   def fork_mount
     ec "mkdir #{parent_dir}", silent: true
@@ -108,6 +111,12 @@ describe "NestedFile" do
     it 'read subs in file contents - relative_path' do
       str = File.read "#{child_dir}/include_others_rel.txt"
       str.should == "<file a.txt>\nhello\n</file>"
+    end
+
+    it 'ls should work in subs' do
+      #create_child_file
+      ec("ls #{child_dir}/sub2").strip.should == "x.txt"
+      # raise Dir["#{child_dir}/*"].inspect
     end
   end
 
@@ -239,11 +248,11 @@ describe "NestedFile" do
     end
 
     it 'writing to child - shorter string - include_others.txt has written text' do
-      puts "\n\nSPEC START\n\n"
+      # puts "\n\nSPEC START\n\n"
       #sleep 1
       create_child_file "a.txt", "bb"
       # ec "echo '' > #{child_dir}/a.txt"
-      puts "CREATED"
+      # puts "CREATED"
       sleep 0.3
 
       body = "<file #{parent_dir}/a.txt>\nbb\n</file>"

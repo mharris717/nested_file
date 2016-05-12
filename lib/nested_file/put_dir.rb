@@ -17,7 +17,19 @@ module NestedFile
     def contents(path)
       log "contents for #{path}" do
         parent_path = mount_to_parent(path)
-        Dir["#{parent_path}/*"].map { |x| parent_to_mount(x) }
+        res = Dir["#{parent_path}/*"]
+        # puts res.inspect
+        res = res.map { |x| parent_to_mount(x) }
+        if path != "/"
+          res = res.map do |f|
+            r = /^#{path[1..-1]}\//
+            raise "no match" unless f =~ r
+            f2 = f.gsub(r,"")
+            log "subbed #{f} into #{f2}"
+            f2
+          end
+        end
+        res
       end
     end
     def file?(path)
@@ -43,13 +55,8 @@ module NestedFile
     end
     def size(path)
       log "size for #{path}" do
-        # puts caller.join("\n")
         read_file_inner(path).size
       end
-    end
-
-    def delete(*args)
-      raise 'delete'
     end
 
     class FakeFile
@@ -61,13 +68,9 @@ module NestedFile
 
       def close
         file.close
-        # self.wrote = nil
-        
       end
 
       def write(str)
-        puts "str class #{str.class}"
-        self.wrote = str
         PutFile.new(raw_body: str, filename: filename).write_all! file
         str.length
       end
@@ -78,51 +81,25 @@ module NestedFile
     end
 
     def raw_open(path,*args)
-
-      puts "raw_open #{path} #{args.inspect}" 
-      # return nil
+      log "raw_open #{path} #{args.inspect}" 
       if args[0] == 'w'
         FakeFile.new(filename: mount_to_parent(path))
-        # path
       else
         nil
       end
     end
     def raw_truncate(path,i,f)
-      # return nil
-      puts "raw_truncate #{path} #{i} #{f}"
+      log "raw_truncate #{path} #{i} #{f}"
       f.truncate(i)
-      #f.close
     end
     def raw_close(*args)
-      # return nil
-      puts "raw_close #{args.inspect}"
+      log "raw_close #{args.inspect}"
       args.last.close
-
-
     end
     def raw_write(path,offset,sz,buf,file=nil)
-      # return nil
-        puts "raw_write #{path} #{offset} #{sz} #{buf} #{file}"
-        #pfile = PutFile.new(:raw_body => buf, :filename => mount_to_parent(path))
-        #pfile.write_all! file
-        file.write buf
-        # File.open(mount_to_parent(path),"w") do |f|
-        #   f.write buf
-        # end
-        
-        # file.write_all!
-        # # puts "here"
-        # File.open(mount_to_parent(path),"w")
-
-
+      log "raw_write #{path} #{offset} #{sz} #{buf} #{file}"
+      file.write buf
     end
-
-    # @!visibility private
-    def raw_sxync(path,datasync,file=nil)
-        raise "raw_sync"
-    end
-
 
     def can_write?(path)
       #log("can_write? path") do
@@ -131,7 +108,7 @@ module NestedFile
     end
 
     def write_to(path,contents)
-      # puts caller.join("\n")
+      raise 'write_to'
       20.times { log "write_to #{path} #{contents}" }
       file = PutFile.new(:raw_body => contents, :filename => mount_to_parent(path))
       file.write_all!
