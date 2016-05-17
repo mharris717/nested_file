@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
     "lib/nested_file/put_dir.rb",
     "lib/nested_file/put_file.rb",
     "lib/nested_file/util.rb",
+    "nested_file.gemspec",
     "spec/file_section_spec.rb",
     "spec/nested_file_spec.rb",
     "spec/parent_template/a.txt",
