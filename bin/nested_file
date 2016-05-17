@@ -1,6 +1,6 @@
 load File.dirname(__FILE__) + "/../lib/nested_file.rb"
 
-parent_dir, mount_dir = *ARGV
+parent_dir, mount_dir, relative_dir = *ARGV
 
-dir = NestedFile::PutDir.new(:parent_dir => parent_dir, :mount_dir => mount_dir)
+dir = NestedFile::PutDir.new(:parent_dir => parent_dir, :mount_dir => mount_dir, relative_dir: relative_dir)
 FuseFS.start(dir,mount_dir)

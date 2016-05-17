@@ -47,3 +47,9 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+namespace :spec do
+  task :watch do
+    exec "cd util && node watch.js"
+  end
+end

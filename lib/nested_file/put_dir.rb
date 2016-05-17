@@ -9,14 +9,24 @@ module NestedFile
     def parent_to_mount(path)
       path.gsub("#{parent_dir}/","")
     end
+    def mount_to_parent_if_relative(path)
+      if Pathname.new(path).absolute?
+        path
+      else
+        mount_to_parent(path)
+      end
+    end
   end
 
   class PutDir
     include FromHash
-    attr_accessor :parent_dir, :mount_dir
+    attr_accessor :parent_dir, :mount_dir, :relative_dir
     
     fattr(:convert_path) do
       ConvertPath.new(parent_dir: parent_dir, mount_dir: mount_dir)
+    end
+    fattr(:relative_convert_path) do
+      ConvertPath.new(parent_dir: relative_dir||parent_dir, mount_dir: mount_dir)
     end
     extend Forwardable
     def_delegators :convert_path, :mount_to_parent, :parent_to_mount
@@ -36,7 +46,7 @@ module NestedFile
     end
     def read_file_inner(path)
       body = File.read(mount_to_parent(path))
-      PutFile.new(raw_body: body, filename: mount_to_parent(path), put_dir: self).parsed_body
+      PutFile.new(raw_body: body, filename: mount_to_parent(path), convert_path: relative_convert_path).parsed_body
     end
     def read_file(path)
       log "read file #{path}" do
@@ -64,7 +74,7 @@ module NestedFile
         args.last.close
       end
       def raw_write(path,offset,sz,buf,file=nil)
-        PutFile.new(raw_body: buf, filename: mount_to_parent(path)).write_all! file
+        PutFile.new(raw_body: buf, filename: mount_to_parent(path), convert_path: relative_convert_path).write_all! file
         buf.length
       end
     end

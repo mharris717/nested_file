@@ -1,29 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
-require 'ostruct'
-
-class FileStub
-  fattr(:files) { {} }
-  def add(file,contents)
-    self.files[file] = contents
-  end
-  def exist?(file)
-    !!files[file]
-  end
-  def read(file)
-    files[file] || (raise "no file")
-  end
-end
 
 describe "FileSection" do
-  let(:file_stub) do
-    FileStub.new
-  end
-
-  before(:each) do
-    FileTest.stub(:exist?) { |file| file_stub.exist?(file) }
-    File.stub(:read) { |file| file_stub.read(file) }
-  end
-
+  include_context "file stub"
+  
   it 'smoke' do
     file = "/a/b/c"
     body = 'abc'

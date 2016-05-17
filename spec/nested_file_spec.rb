@@ -184,9 +184,10 @@ describe "NestedFile" do
     end
   end
 
+  # this test probably useless now
   describe 'saving file with sections writes to other files - save to parent' do
     before(:each) do
-      body = "<file ../p.txt>\nI was here\n</file>"
+      body = "<file p.txt>\nI was here\n</file>"
       create_child_file "sub/b.txt", body
     end
 

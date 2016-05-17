@@ -36,7 +36,8 @@ function notify(title,message) {
 function testNotify() {
   const spawn = require('child_process').spawn;
   // var test = spawn("npm",['test'])
-  var test = spawn('bundle',['exec','rspec','-f','d'], {
+  // var test = spawn('bundle',['exec','rspec','-f','d'], {
+  var test = spawn('./util/run_specs', {
     cwd: "/code/orig/nested_file"
   })
 
