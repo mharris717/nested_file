@@ -11,23 +11,23 @@ group :development do
   gem "rspec", "~> 2.8.0"
   gem "rdoc", "~> 3.12"
   gem "bundler", ">= 1.0.0"
-  gem "jeweler"
+  gem "jeweler", '~> 2.1.1'
   #gem "rcov", ">= 0"
 
-  gem 'guard'
+  gem 'guard','~> 2.6.1'
   gem 'guard-rspec'
   gem 'guard-spork'
 
   gem 'rb-fsevent', '~> 0.9'
 
-  gem 'lre'
+  gem 'lre','~> 0.3.1'
 
-  gem 'rr'
+  gem 'rr','~> 1.1.2'
 end
 
-gem 'mharris_ext'
-gem 'rfusefs'
-# gem 'rfuse', github: "winebarrel/rfuse", branch: 'master'
+gem 'mharris_ext','>= 1.7.1'
+gem 'rfusefs','~> 1.0.3'
+gem 'rfuse', '1.1.2', github: "mharris717/rfuse", branch: 'osx_bumped_version'
 
 # group :development do
 #   gem 'sys-filesystem'

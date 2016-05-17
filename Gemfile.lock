@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/mharris717/rfuse.git
+  revision: 53e11c6c5fe1a46034998c68122289673ba503ee
+  branch: osx_bumped_version
+  specs:
+    rfuse (1.1.2)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -90,7 +97,6 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
-    rfuse (1.1.1.RC0)
     rfusefs (1.0.3)
       rfuse (~> 1.1)
     rr (1.1.2)
@@ -116,16 +122,17 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (>= 1.0.0)
-  guard
+  guard (~> 2.6.1)
   guard-rspec
   guard-spork
-  jeweler
-  lre
-  mharris_ext
+  jeweler (~> 2.1.1)
+  lre (~> 0.3.1)
+  mharris_ext (>= 1.7.1)
   rb-fsevent (~> 0.9)
   rdoc (~> 3.12)
-  rfusefs
-  rr
+  rfuse (= 1.1.2)!
+  rfusefs (~> 1.0.3)
+  rr (~> 1.1.2)
   rspec (~> 2.8.0)
 
 RUBY VERSION
