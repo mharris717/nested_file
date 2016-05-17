@@ -53,7 +53,9 @@ Gem::Specification.new do |s|
     "util/package.json",
     "util/red.png",
     "util/run_specs",
-    "util/watch.js"
+    "util/watch.js",
+    "vol/spawn_mount.rb",
+    "vol/watch_cat.rb"
   ]
   s.homepage = "http://github.com/mharris717/nested_file"
   s.licenses = ["MIT"]
