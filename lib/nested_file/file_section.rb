@@ -27,6 +27,7 @@ module NestedFile
       attr_accessor :parent_body, :full_file_to_insert
 
       fattr(:trimmed_parent_body) do
+        raise "no parent_body for #{full_file_to_insert}" unless parent_body
         parent_body.scan(/\A\n?(.*?)\n?\Z/m).first.first
       end
 

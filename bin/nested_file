@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 load File.dirname(__FILE__) + "/../lib/nested_file.rb"
 
 parent_dir, mount_dir, relative_dir = *ARGV

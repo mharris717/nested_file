@@ -20,5 +20,9 @@ puts mounts.inspect
 puts "Continue?"
 STDIN.gets
 mounts.each do |name|
-  ec "umount #{name}"
+  begin
+    ec "umount #{name}"
+  rescue => exp
+    puts exp.message
+  end
 end

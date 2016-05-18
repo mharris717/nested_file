@@ -34,3 +34,4 @@ gem 'rfuse', '1.1.2', github: "mharris717/rfuse", branch: 'osx_bumped_version'
 #   gem "ffi-xattr", ">= 0.1.1"
 # end
 
+# git clone git@github.com:mharris717/rfuse.git rfuse_for_osx && cd rfuse_for_osx && git checkout osx_bumped_version && bundle install && rake install
