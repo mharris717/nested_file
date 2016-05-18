@@ -5,9 +5,10 @@ module NestedFile
 
     def file_block_regex(tag)
       separate_closing_tag = ">(.*?)<\/#{tag}>"
-      /<#{tag}\s+
-       (.+?)\s*
-       (?:#{separate_closing_tag}|\/>)/mx
+      /<#{tag}\s+ # opening tag and any whitespace
+       (.+?)\s* # file name and any whitespace
+       (?:#{separate_closing_tag}|\/>) # either a self closing tag or a body and a closing tag
+      /mx
     end
 
     fattr(:parsed_body) do
@@ -27,7 +28,6 @@ module NestedFile
     def write_subs!
       raw_body.scan(file_block_regex(:file)) do |m|
         sub_file, sub_body = *m
-        #ff = File.expand_path(sub_file,File.dirname(filename))
         full = convert_path.mount_to_parent_if_relative(sub_file)
         FileSection::Write.new(parent_body: sub_body || '', full_file_to_insert: full).write!
       end

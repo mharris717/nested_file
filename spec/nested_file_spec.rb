@@ -111,7 +111,7 @@ describe "NestedFile" do
     before do
       create_parent_file "sub/a.txt","abc" 
       create_parent_file "sub/b.txt","xyz" 
-      create_parent_file "sub_all.txt","<files sub/*.txt></files>"
+      create_parent_file "sub_all.txt","<files sub/*.txt>\n</files>"
     end
 
     it 'shows group' do
