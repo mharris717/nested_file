@@ -12,11 +12,11 @@ def log(str)
     str = "#{str} res: #{res}"
   end
   # puts str
-  File.append "/code/orig/nested_file/debug.log","#{str}\n"
+  File.append "/code/orig/nested_file/tmp/debug.log","#{str}\n"
   res
 end
 
-File.create "/code/orig/nested_file/debug.log","Starting at #{Time.now}\n"
+File.create "/code/orig/nested_file/tmp/debug.log","Starting at #{Time.now}\n"
 
 # class String
 #   def gsub_safe(reg,str,&b)
