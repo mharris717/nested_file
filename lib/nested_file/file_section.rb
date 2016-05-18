@@ -10,7 +10,11 @@ module NestedFile
 
       fattr(:insert_body) do
         if FileTest.exist?(full_file_to_insert)
-          File.read(full_file_to_insert)
+          res = File.read(full_file_to_insert)
+          if $use_indent
+            res = res.split("\n").map { |x| "  #{x}" }.join("\n")
+          end
+          res
         else
           log "file to insert #{full_file_to_insert} doesn't exist"
           ""
@@ -18,7 +22,7 @@ module NestedFile
       end
 
       def to_s
-        "<file #{file_to_insert}>\n#{insert_body}\n</file>"
+        "<#{ftag} #{file_to_insert}>\n" + insert_body + "\n</#{ftag}>"
       end
     end
 
@@ -28,11 +32,31 @@ module NestedFile
 
       fattr(:trimmed_parent_body) do
         raise "no parent_body for #{full_file_to_insert}" unless parent_body
-        parent_body.scan(/\A\n?(.*?)\n?\Z/m).first.first
+        res = parent_body.scan(/\A\n?(.*?)\n?\Z/m).first.first
+
+        lines = res.split("\n")
+        min_indent = 99999
+        lines.each do |line|
+          if line.present?
+            raise 'bad' unless line =~ /^(\s*)/
+            min_indent = [min_indent,$1.length].min
+          end
+        end
+
+        if min_indent > 0 && min_indent < 1000
+          lines = lines.map { |x| x[min_indent..-1] }
+          res = lines.join("\n")
+        end
+
+        res
       end
 
       def should_write?
-        trimmed_parent_body.present?
+        return false unless trimmed_parent_body.present?
+        if FileTest.exist?(full_file_to_insert)
+          return false if trimmed_parent_body == File.read(full_file_to_insert)
+        end
+        true
       end
       def write!
         return unless should_write?

@@ -26,3 +26,7 @@ File.create "/code/orig/nested_file/debug.log","Starting at #{Time.now}\n"
 #     res
 #   end
 # end
+
+def ftag
+  "file"
+end

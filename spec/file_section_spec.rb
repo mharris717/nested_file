@@ -29,4 +29,9 @@ describe "FileSection" do
     section = NestedFile::FileSection::Write.new(parent_body: "\n\nabc\n")
     section.trimmed_parent_body.should == "\nabc"
   end
+
+  it 'respects global indent' do
+    section = NestedFile::FileSection::Write.new(parent_body: "  a\n   b\n\n  c")
+    section.trimmed_parent_body.should == "a\n b\n\nc"
+  end
 end

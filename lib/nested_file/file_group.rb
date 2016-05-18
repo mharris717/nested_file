@@ -10,13 +10,12 @@ module NestedFile
     fattr(:sections) do
       files_to_insert.map do |f|
         fp = convert_path.parent_to_mount(f)
-        #full = File.join File.dirname(parent_file.filename),fp
         FileSection.new(file_to_insert: fp, full_file_to_insert: f)
       end
     end
     def to_s
       res = sections.join("\n")
-      "<files #{file_glob}>\n#{res}\n</files>"
+      "<#{ftag}s #{file_glob}>\n#{res}\n</#{ftag}s>"
     end
   end
 end

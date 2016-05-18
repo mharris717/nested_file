@@ -34,7 +34,7 @@ module NestedFile
     end
     def write_self!(file=nil)
       res = raw_body.gsub(file_block_regex(:file)) do
-        "<file #{$1}>\n</file>"
+        "<#{ftag} #{$1}>\n</#{ftag}>"
       end
  
       if file
