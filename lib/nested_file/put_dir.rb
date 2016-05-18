@@ -1,10 +1,14 @@
 module NestedFile
   class ConvertPath
     include FromHash
-    attr_accessor :parent_dir, :mount_dir
+    attr_accessor :parent_dir, :mount_dir, :actual_parent_dir
     # converts the directory relative to the mount point to an absolute parent path
     def mount_to_parent(path)
-      File.join parent_dir, path
+      if path.include?('PARENT_ROOT')
+        path.gsub('PARENT_ROOT',actual_parent_dir)
+      else
+        File.join parent_dir, path
+      end
     end
     def parent_to_mount(path)
       path.gsub("#{parent_dir}/","")
@@ -23,10 +27,10 @@ module NestedFile
     attr_accessor :parent_dir, :mount_dir, :relative_dir
     
     fattr(:convert_path) do
-      ConvertPath.new(parent_dir: parent_dir, mount_dir: mount_dir)
+      ConvertPath.new(parent_dir: parent_dir, mount_dir: mount_dir, actual_parent_dir: parent_dir)
     end
     fattr(:relative_convert_path) do
-      ConvertPath.new(parent_dir: relative_dir||parent_dir, mount_dir: mount_dir)
+      ConvertPath.new(parent_dir: relative_dir||parent_dir, mount_dir: mount_dir, actual_parent_dir: parent_dir)
     end
     extend Forwardable
     def_delegators :convert_path, :mount_to_parent, :parent_to_mount

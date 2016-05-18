@@ -13,8 +13,12 @@ module NestedFile
         FileSection.new(file_to_insert: fp, full_file_to_insert: f)
       end
     end
+    def divider
+      # "\n\n---------------------------\n\n"
+      "\n"
+    end
     def to_s
-      res = sections.join("\n")
+      res = sections.join(divider)
       "<#{ftag}s #{file_glob}>\n#{res}\n</#{ftag}s>"
     end
   end

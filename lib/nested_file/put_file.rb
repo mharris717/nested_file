@@ -26,11 +26,14 @@ module NestedFile
     end
 
     def write_subs!
+      res = []
       raw_body.scan(file_block_regex(:file)) do |m|
         sub_file, sub_body = *m
         full = convert_path.mount_to_parent_if_relative(sub_file)
-        FileSection::Write.new(parent_body: sub_body || '', full_file_to_insert: full).write!
+        res << FileSection::Write.new(parent_body: sub_body || '', full_file_to_insert: full)
       end
+      res.each { |x| x.should_write? }
+      res.each { |x| x.write! }
     end
     def write_self!(file=nil)
       res = raw_body.gsub(file_block_regex(:file)) do

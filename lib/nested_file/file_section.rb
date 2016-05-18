@@ -51,13 +51,15 @@ module NestedFile
         res
       end
 
-      def should_write?
+      def should_write_inner
         return false unless trimmed_parent_body.present?
         if FileTest.exist?(full_file_to_insert)
           return false if trimmed_parent_body == File.read(full_file_to_insert)
         end
         true
       end
+      fattr(:should_write) { should_write_inner }
+      def should_write?; should_write; end
       def write!
         return unless should_write?
         log "writing to #{full_file_to_insert}"

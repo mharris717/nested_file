@@ -68,3 +68,9 @@ shared_context "file stub" do
     file_stub.stub!
   end
 end
+
+# NestedFile::FileGroup.class_eval do
+#   def divider
+#     "\n"
+#   end
+# end
