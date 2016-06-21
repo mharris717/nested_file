@@ -34,4 +34,14 @@ describe "FileSection" do
     section = NestedFile::FileSection::Write.new(parent_body: "  a\n   b\n\n  c")
     section.trimmed_parent_body.should == "a\n b\n\nc"
   end
+
+  describe "Partial section" do
+    it "smoke" do
+      file_stub.add "/a.txt","a\n\nb\nc\nd"
+      section = NestedFile::FileSection::Partial.new(full_file_to_insert: "/a.txt", 
+                                                     file_to_insert: "a.txt:3..4", 
+                                                     lines: 3..4)
+      section.to_s.should == "<file a.txt:3..4>\nb\nc\n</file>"
+    end
+  end
 end

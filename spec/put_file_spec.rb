@@ -36,6 +36,12 @@ describe "PutFile" do
       file_stub.add "a.txt","hello"
       new_file(body).parsed_body.should == "<file a.txt>\nhello\n</file>\nMore Stuff"
     end
+
+    it "reads partial" do
+      body = "<file a.txt:3..4 />\nMore Stuff"
+      file_stub.add "a.txt","a\n\nb\nc\nd"
+      new_file(body).parsed_body.should == "<file a.txt:3..4>\nb\nc\n</file>\nMore Stuff"
+    end
   end
 
 end

@@ -11,11 +11,27 @@ module NestedFile
       /mx
     end
 
+    def split_file_lines(file)
+      if file =~ /:/
+        file,raw_lines = *file.split(":")
+        raise "bad" unless raw_lines =~ /(\d+)\.\.(\d+)/
+        lines = ($1.to_i)..($2.to_i)
+        [file,lines]
+      else
+        [file,nil]
+      end
+    end
+
     fattr(:parsed_body) do
       res = raw_body.gsub(file_block_regex(:file)) do
-        f = $1
+        full_f = $1
+        f, lines = *split_file_lines(full_f)
         full = convert_path.mount_to_parent_if_relative(f)
-        FileSection::Read.new(file_to_insert: f, full_file_to_insert: full).to_s
+        if lines
+          FileSection::Partial.new(file_to_insert: full_f, full_file_to_insert: full, lines: lines).to_s
+        else
+          FileSection::Read.new(file_to_insert: f, full_file_to_insert: full).to_s
+        end
       end
 
       res.gsub(file_block_regex(:files)) do 
